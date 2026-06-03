@@ -1,0 +1,389 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Incentivos Variables — Plenum Pilates</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F7F5F0;
+  --surface: #FFFFFF;
+  --surface2: #F0EDE6;
+  --border: rgba(0,0,0,0.10);
+  --border2: rgba(0,0,0,0.18);
+  --text: #1A1916;
+  --muted: #6B6860;
+  --accent: #1A1916;
+  --green-bg: #E8F5E0; --green-txt: #2E6B18;
+  --amber-bg: #FDF0D5; --amber-txt: #8A5A0A;
+  --red-bg: #FDECEA; --red-txt: #A32020;
+  --radius: 10px;
+  --mono: 'DM Mono', monospace;
+  --sans: 'DM Sans', sans-serif;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--sans); background: var(--bg); color: var(--text); min-height: 100vh; }
+
+header { border-bottom: 1px solid var(--border2); padding: 1.5rem 2rem; display: flex; align-items: baseline; gap: 1.5rem; background: var(--surface); }
+header h1 { font-size: 18px; font-weight: 600; letter-spacing: -0.02em; }
+header span { font-size: 13px; color: var(--muted); }
+
+.container { max-width: 780px; margin: 0 auto; padding: 2rem 1.5rem; display: flex; flex-direction: column; gap: 1.25rem; }
+
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.5rem; }
+.card-label { font-size: 11px; font-weight: 500; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin-bottom: 1rem; }
+
+textarea {
+  width: 100%; min-height: 130px; font-family: var(--mono); font-size: 12px; line-height: 1.6;
+  border: 1px solid var(--border2); border-radius: var(--radius); padding: 12px;
+  background: var(--surface2); color: var(--text); resize: vertical; outline: none;
+}
+textarea:focus { border-color: var(--text); }
+
+input[type="text"] {
+  width: 100%; padding: 9px 12px; font-family: var(--sans); font-size: 13px;
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: var(--surface2); color: var(--text); outline: none; margin-bottom: 8px;
+}
+input[type="text"]:focus { border-color: var(--text); }
+input[type="text"]:last-child { margin-bottom: 0; }
+
+.hint { font-size: 11.5px; color: var(--muted); line-height: 1.6; margin-top: 8px; font-family: var(--mono); }
+
+.btn-calc {
+  width: 100%; margin-top: 1rem; padding: 13px;
+  background: var(--text); color: var(--bg); border: none; border-radius: var(--radius);
+  font-family: var(--sans); font-size: 14px; font-weight: 500; cursor: pointer; letter-spacing: -0.01em;
+  transition: opacity 0.15s;
+}
+.btn-calc:hover { opacity: 0.82; }
+
+.error { font-size: 13px; color: var(--red-txt); margin-top: 10px; display: none; }
+
+.metrics { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.metric { background: var(--surface2); border-radius: var(--radius); padding: 1rem 1.25rem; }
+.metric-lbl { font-size: 11px; text-transform: uppercase; letter-spacing: 0.07em; color: var(--muted); margin-bottom: 6px; }
+.metric-val { font-size: 26px; font-weight: 300; letter-spacing: -0.03em; }
+.metric-sub { margin-top: 4px; }
+
+.badge { display: inline-block; font-size: 11px; font-weight: 500; padding: 3px 9px; border-radius: 99px; }
+.badge-green { background: var(--green-bg); color: var(--green-txt); }
+.badge-amber { background: var(--amber-bg); color: var(--amber-txt); }
+.badge-red { background: var(--red-bg); color: var(--red-txt); }
+
+.prof-tabs, .email-tabs { display: flex; gap: 6px; margin-bottom: 1.25rem; }
+.tab {
+  padding: 6px 16px; border-radius: 99px; font-size: 13px; font-weight: 400;
+  cursor: pointer; border: 1px solid var(--border2); background: transparent; color: var(--muted);
+  font-family: var(--sans); transition: all 0.12s;
+}
+.tab:hover { color: var(--text); border-color: var(--text); }
+.tab.active { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+.bloque-row { display: flex; justify-content: space-between; align-items: center; padding: 11px 0; border-bottom: 1px solid var(--border); }
+.bloque-row:last-child { border-bottom: none; }
+.bloque-name { font-size: 13px; color: var(--muted); }
+.bloque-right { display: flex; align-items: center; gap: 10px; }
+.bloque-pct { font-size: 13px; }
+.bloque-eur { font-size: 14px; font-weight: 500; min-width: 60px; text-align: right; }
+
+.total-bar { display: flex; justify-content: space-between; align-items: baseline; padding-top: 14px; margin-top: 4px; border-top: 2px solid var(--text); }
+.total-lbl { font-size: 14px; font-weight: 500; }
+.total-eur { font-size: 28px; font-weight: 300; letter-spacing: -0.03em; }
+
+.copy-bar { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
+.copy-bar-lbl { font-size: 13px; font-weight: 500; }
+
+.btn-copy {
+  display: flex; align-items: center; gap: 6px; padding: 7px 14px;
+  border: 1px solid var(--border2); border-radius: var(--radius); background: transparent;
+  font-family: var(--sans); font-size: 12px; color: var(--muted); cursor: pointer; transition: all 0.12s;
+}
+.btn-copy:hover { background: var(--surface2); color: var(--text); }
+.btn-copy svg { width: 14px; height: 14px; }
+
+.email-box, .md-box {
+  font-family: var(--mono); font-size: 12px; line-height: 1.7;
+  background: var(--surface2); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 1.25rem; white-space: pre-wrap; color: var(--text);
+}
+.md-box { white-space: pre; overflow-x: auto; }
+
+.hidden { display: none !important; }
+
+@media (max-width: 500px) {
+  .metrics { grid-template-columns: 1fr; }
+  .metric-val { font-size: 22px; }
+  .bloque-right { gap: 6px; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Incentivos Variables</h1>
+  <span>Plenum Pilates · Cálculo mensual</span>
+</header>
+
+<div class="container">
+
+  <!-- INPUT -->
+  <div class="card">
+    <div class="card-label">Paso 1 — Datos del Google Sheet</div>
+    <textarea id="raw-data" placeholder="Pega aquí las filas del mes (con o sin cabecera). Puedes pegar varias semanas y ambas profesoras.
+
+Ejemplo:
+S19	04/05/2026	08/05/2026	Sonia	26	104	75	14	2	18,67%	72,12%"></textarea>
+    <p class="hint">Columnas: ID_Semana · Fecha_Inicio · Fecha_Fin · Profesora · Horas_Totales · Plazas_Disponibles · Alumnos_Reales · Plataformas · Clases_Vacias · Pct_Wellhub · Ocupacion_Pct</p>
+
+    <div style="margin-top:1.25rem;">
+      <div class="card-label" style="margin-bottom:8px;">Paso 2 — Observaciones para los correos (opcional)</div>
+      <input type="text" id="obs-sonia" placeholder="Observaciones para Sonia (dejar vacío = sin comentarios)">
+      <input type="text" id="obs-chloe" placeholder="Observaciones para Chloe (dejar vacío = sin comentarios)">
+    </div>
+
+    <button class="btn-calc" onclick="calcular()">Calcular incentivos</button>
+    <div class="error" id="error-msg"></div>
+  </div>
+
+  <!-- RESULTS -->
+  <div id="results" class="hidden">
+
+    <!-- Centro -->
+    <div class="card">
+      <div class="card-label">Resultado del centro</div>
+      <div class="metrics">
+        <div class="metric"><div class="metric-lbl">Mes analizado</div><div class="metric-val" id="res-mes">—</div></div>
+        <div class="metric"><div class="metric-lbl">Ocupación global</div><div class="metric-val" id="res-centro">—</div><div class="metric-sub" id="res-centro-badge"></div></div>
+      </div>
+    </div>
+
+    <!-- Por profesora -->
+    <div class="card">
+      <div class="card-label">Desglose por profesora</div>
+      <div class="prof-tabs">
+        <button class="tab active" onclick="showProf('Sonia',this)">Sonia</button>
+        <button class="tab" onclick="showProf('Chloe',this)">Chloe</button>
+      </div>
+      <div id="prof-panel"></div>
+    </div>
+
+    <!-- Correos -->
+    <div class="card">
+      <div class="card-label">Correos y resumen</div>
+      <div class="email-tabs">
+        <button class="tab active" id="tab-sonia" onclick="showEmail('sonia',this)">Correo Sonia</button>
+        <button class="tab" id="tab-chloe" onclick="showEmail('chloe',this)">Correo Chloe</button>
+        <button class="tab" id="tab-md" onclick="showEmail('md',this)">Resumen MD</button>
+      </div>
+      <div id="email-panel"></div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const CFG = {
+  Sonia: { email:'lapiscis79@gmail.com', a:23.45, b:23.45, c:20.10 },
+  Chloe: { email:'chloe.daubeterre16@gmail.com', a:19.40, b:19.40, c:16.63 }
+};
+let S = {};
+
+function parseNum(s){ return parseFloat((s||'0').toString().replace(',','.').replace('%','').trim())||0; }
+function pct(n){ return n.toFixed(1).replace('.',',')+'%'; }
+function eur(n){ return n.toFixed(2).replace('.',',')+'&nbsp;€'; }
+function eurPlain(n){ return n.toFixed(2).replace('.',',')+'€'; }
+
+function cumA(o){ return o>=80?100:o>=75?50:0; }
+function cumB(v){ return v<=2?100:v<=5?50:0; }
+function cumC(o){ return o>=80?100:o>=75?50:0; }
+
+function badge(p){
+  if(p===100) return '<span class="badge badge-green">100% ✓</span>';
+  if(p===50) return '<span class="badge badge-amber">50%</span>';
+  return '<span class="badge badge-red">0%</span>';
+}
+
+function mesInfo(rows){
+  const f=rows[0][1], pts=f.split('/');
+  const d=new Date(pts[2],pts[1]-1,pts[0]);
+  const m=d.getMonth(), a=d.getFullYear();
+  const mn=MESES[m]; const mn2=MESES[(m+1)%12];
+  const a2=m===11?a+1:a;
+  return { mes:mn.charAt(0).toUpperCase()+mn.slice(1), anyo:a, mesPago:mn2.charAt(0).toUpperCase()+mn2.slice(1)+' '+a2, mesNum:m };
+}
+
+function calcular(){
+  const raw=document.getElementById('raw-data').value.trim();
+  const errEl=document.getElementById('error-msg');
+  errEl.style.display='none';
+  if(!raw){ show_err('Por favor pega los datos del Google Sheet.'); return; }
+  const lines=raw.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('ID_Semana'));
+  if(!lines.length){ show_err('No se encontraron filas válidas.'); return; }
+  const rows=lines.map(l=>l.split('\t'));
+
+  const info=mesInfo(rows);
+  const profs={};
+  let tp=0,ta=0;
+  rows.forEach(r=>{
+    const n=r[3];
+    if(!CFG[n]) return;
+    if(!profs[n]) profs[n]={p:0,a:0,v:0};
+    profs[n].p+=parseNum(r[5]);
+    profs[n].a+=parseNum(r[6]);
+    profs[n].v+=parseNum(r[8]);
+    tp+=parseNum(r[5]); ta+=parseNum(r[6]);
+  });
+  if(!profs['Sonia']&&!profs['Chloe']){ show_err('No se encontraron datos de Sonia ni Chloe. Revisa que los nombres coincidan exactamente.'); return; }
+
+  const ocC=tp?(ta/tp)*100:0;
+  const cC=cumC(ocC);
+  const res={};
+  ['Sonia','Chloe'].forEach(n=>{
+    if(!profs[n]) return;
+    const d=profs[n], cfg=CFG[n];
+    const ocI=d.p?(d.a/d.p)*100:0;
+    const cA=cumA(ocI), cB=cumB(d.v);
+    const iA=(cA/100)*cfg.a, iB=(cB/100)*cfg.b, iC=(cC/100)*cfg.c;
+    res[n]={ocI,cA,cB,cC,iA,iB,iC,tot:iA+iB+iC,v:d.v};
+  });
+
+  S={...info, ocC, cC, res,
+    obsSonia:document.getElementById('obs-sonia').value.trim()||'Sin comentarios',
+    obsChloe:document.getElementById('obs-chloe').value.trim()||'Sin comentarios'
+  };
+
+  document.getElementById('res-mes').textContent=S.mes+' '+S.anyo;
+  document.getElementById('res-centro').textContent=pct(ocC);
+  document.getElementById('res-centro-badge').innerHTML=badge(cC);
+
+  showProf('Sonia',document.querySelector('.prof-tabs .tab'));
+  showEmail('sonia',document.getElementById('tab-sonia'));
+  document.getElementById('results').classList.remove('hidden');
+  document.getElementById('results').scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+function show_err(msg){ const e=document.getElementById('error-msg'); e.textContent=msg; e.style.display='block'; }
+
+function showProf(n,btn){
+  document.querySelectorAll('.prof-tabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const r=S.res[n];
+  if(!r){ document.getElementById('prof-panel').innerHTML='<p style="color:var(--muted);font-size:13px;">Sin datos para '+n+' en este mes.</p>'; return; }
+  document.getElementById('prof-panel').innerHTML=`
+    <div class="bloque-row">
+      <span class="bloque-name">Bloque A — Ocupación individual</span>
+      <div class="bloque-right">${badge(r.cA)}<span class="bloque-pct">${pct(r.ocI)}</span><span class="bloque-eur">${eur(r.iA)}</span></div>
+    </div>
+    <div class="bloque-row">
+      <span class="bloque-name">Bloque B — Clases vacías</span>
+      <div class="bloque-right">${badge(r.cB)}<span class="bloque-pct">${r.v} clases</span><span class="bloque-eur">${eur(r.iB)}</span></div>
+    </div>
+    <div class="bloque-row">
+      <span class="bloque-name">Bloque C — Resultado centro</span>
+      <div class="bloque-right">${badge(r.cC)}<span class="bloque-pct">${pct(S.ocC)}</span><span class="bloque-eur">${eur(r.iC)}</span></div>
+    </div>
+    <div class="total-bar">
+      <span class="total-lbl">Total a percibir</span>
+      <span class="total-eur">${eur(r.tot)}</span>
+    </div>`;
+}
+
+function emailTxt(n){
+  const r=S.res[n], cfg=CFG[n];
+  const obs=n==='Sonia'?S.obsSonia:S.obsChloe;
+  return `Para: ${cfg.email}
+De: gestion@plenumpilates.com
+Asunto: Nómina y Resultado de Incentivos Variables - ${S.mes}/${S.anyo}
+
+Hola ${n},
+Te adjunto tu nómina correspondiente al mes de ${S.mes} y la descripción de los incentivos por ocupación.
+
+OBSERVACIONES: ${obs}
+
+Este es el detalle del cálculo de tus incentivos variables correspondientes al mes de ${S.mes}.
+
+Bloque A – Ocupación Real Individual (35%):
+Resultado: ${pct(r.ocI)} de ocupación.
+Cumplimiento: ${r.cA}% -> ${eurPlain(r.iA)}
+Referencia: >= 80% paga el 100%; 75-79,9% paga el 50%; <75% paga 0%.
+
+Bloque B – Gestión de Clases Vacías (35%):
+Resultado: ${r.v} clases vacías detectadas.
+Cumplimiento: ${r.cB}% -> ${eurPlain(r.iB)}
+Referencia: 0-2 clases vacías paga el 100%; 3-5 paga el 50%; >5 paga 0%.
+
+Bloque C – Resultado Global del Centro (30%):
+Resultado: ${pct(S.ocC)} de ocupación media del centro.
+Cumplimiento: ${r.cC}% -> ${eurPlain(r.iC)}
+Referencia: >= 80% centro paga el 100%; 75-79,9% paga el 50%; <75% paga 0%.
+
+IMPORTE TOTAL A PERCIBIR: ${eurPlain(r.tot)}
+(Este importe se abonará en la nómina del mes de ${S.mesPago} según política interna)
+
+Cualquier duda que tengas, por favor coméntamelo y lo revisamos.
+
+Un saludo.
+/Miguel.`;
+}
+
+function mdTxt(){
+  const s=S.res['Sonia'], c=S.res['Chloe'];
+  const tot=((s?s.tot:0)+(c?c.tot:0)).toFixed(2).replace('.',',');
+  const fila=(n,r)=>r?`| **${n}** | ${pct(r.ocI)} (${r.cA}% → ${eurPlain(r.iA)}) | ${r.v} clases (${r.cB}% → ${eurPlain(r.iB)}) | ${pct(S.ocC)} (${r.cC}% → ${eurPlain(r.iC)}) | **${eurPlain(r.tot)}** |`:`| **${n}** | — | — | — | — |`;
+  const obs=[S.obsSonia!=='Sin comentarios'?'- Sonia: '+S.obsSonia:'', S.obsChloe!=='Sin comentarios'?'- Chloe: '+S.obsChloe:''].filter(Boolean).join('\n')||`- Sin comentarios / incidencias registradas en el mes de ${S.mes}.`;
+  return `# Registro de Incentivos Variables - ${S.mes} ${S.anyo}
+
+## 1. Resumen General del Centro
+- **Mes de los datos:** ${S.mes} ${S.anyo}
+- **Mes de abono en nómina:** ${S.mesPago}
+- **Ocupación media del centro:** ${pct(S.ocC)} (Bloque C: Cumplimiento ${S.cC}%)
+- **Total Incentivos Devengados:** ${tot} €
+
+## 2. Desglose por Profesora
+
+| Profesora | Bloque A (Ocup. Indiv.) | Bloque B (Clas. Vacías) | Bloque C (Result. Centro) | Total a Percibir |
+| :--- | :--- | :--- | :--- | :--- |
+${fila('Sonia',s)}
+${fila('Chloe',c)}
+
+## 3. Histórico de Variables de Referencia
+- **Sonia:** Salario ref: 1.674,72 € | Máx variable (4%): 66,99 €
+- **Chloe:** Salario ref: 1.385,60 € | Máx variable (4%): 55,42 €
+
+## 4. Observaciones e Incidencias
+${obs}`;
+}
+
+function showEmail(who,btn){
+  document.querySelectorAll('.email-tabs .tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  const panel=document.getElementById('email-panel');
+  let content,label,ismd=who==='md';
+  if(who==='sonia'){ content=emailTxt('Sonia'); label='Correo Sonia'; }
+  else if(who==='chloe'){ content=emailTxt('Chloe'); label='Correo Chloe'; }
+  else { content=mdTxt(); label='Resumen Markdown'; }
+  panel.innerHTML=`
+    <div class="copy-bar">
+      <span class="copy-bar-lbl">${label}</span>
+      <button class="btn-copy" onclick="copiar(this,'${encodeURIComponent(content)}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+        Copiar
+      </button>
+    </div>
+    <div class="${ismd?'md-box':'email-box'}">${esc(content)}</div>`;
+}
+
+function copiar(btn,enc){
+  navigator.clipboard.writeText(decodeURIComponent(enc)).then(()=>{
+    btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><polyline points="20 6 9 17 4 12"/></svg> Copiado';
+    setTimeout(()=>{ btn.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="14" height="14"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg> Copiar'; },2000);
+  });
+}
+
+function esc(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+</script>
+</body>
+</html>
